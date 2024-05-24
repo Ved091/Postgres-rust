@@ -13,16 +13,16 @@ async fn main() -> Result<(), sqlx::Error> {
 	// 1) Create a connection pool
 	let pool = PgPoolOptions::new()
 		.max_connections(5)
-		.connect("postgresql://prisma_owner:KHtL0GNeRYE8@ep-ancient-butterfly-a5aa57cv.us-east-2.aws.neon.tech/prisma?sslmode=require")
+		.connect("DB_URL")
 		.await?;
 
 	// 2) Create table if not exist yet
 	sqlx::query(
 		r#"
-CREATE TABLE IF NOT EXISTS ticket (
-  id bigserial,
-  name text
-);"#,
+        CREATE TABLE IF NOT EXISTS ticket (
+        id bigserial,
+        name text
+        );"#,
 	)
 	.execute(&pool)
 	.await?;
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS ticket (
 	println!("\n=== select tickets with query.map...:\n{:?}", tickets);
 
 	// 6) Select query_as (using derive FromRow)
-	let select_query = sqlx::query_as::<_, Ticket>("SELECT id, name FROM ticket");
+	let select_query: sqlx::query::QueryAs<sqlx::Postgres, Ticket, sqlx::postgres::PgArguments> = sqlx::query_as::<_, Ticket>("SELECT id, name FROM ticket");
 	let tickets: Vec<Ticket> = select_query.fetch_all(&pool).await?;
 	println!("\n=== select tickets with query.map...: \n{:?}", tickets);
     
